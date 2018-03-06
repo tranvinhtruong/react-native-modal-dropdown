@@ -31,6 +31,8 @@ const TOUCHABLE_ELEMENTS = [
   'TouchableNativeFeedback'
 ];
 
+const MAX_ITEM_DISPLAY = 5
+
 export default class ModalDropdown extends Component {
   static propTypes = {
     disabled: PropTypes.bool,
@@ -225,14 +227,18 @@ export default class ModalDropdown extends Component {
   }
 
   _calcPosition() {
-    const {dropdownStyle, style, adjustFrame} = this.props;
+    const {dropdownStyle, dropdownTextStyle, style, adjustFrame, options} = this.props;
 
     const dimensions = Dimensions.get('window');
     const windowWidth = dimensions.width;
     const windowHeight = dimensions.height;
 
-    const dropdownHeight = (dropdownStyle && StyleSheet.flatten(dropdownStyle).height) ||
-      StyleSheet.flatten(styles.dropdown).height;
+    const itemCount = options != null && options.length > 1 ? (options.length > MAX_ITEM_DISPLAY ? MAX_ITEM_DISPLAY : options.length) : 1
+    const itemHeight = 2 * StyleSheet.flatten(dropdownTextStyle).paddingVertical
+                      + StyleSheet.flatten(dropdownTextStyle).fontSize
+                      + 2 // border bottom & top
+
+    const dropdownHeight = (itemHeight + StyleSheet.hairlineWidth) * itemCount + 2 * StyleSheet.flatten(dropdownStyle).paddingVertical
 
     const bottomSpace = windowHeight - this._buttonFrame.y - this._buttonFrame.h;
     const rightSpace = windowWidth - this._buttonFrame.x;
@@ -241,7 +247,7 @@ export default class ModalDropdown extends Component {
 
     const positionStyle = {
       height: dropdownHeight,
-      top: showInBottom ? this._buttonFrame.y + this._buttonFrame.h : Math.max(0, this._buttonFrame.y - dropdownHeight),
+      top: showInBottom ? this._buttonFrame.y + this._buttonFrame.h + 8 : Math.max(0, this._buttonFrame.y - dropdownHeight),
     };
 
     if (showInLeft) {
@@ -276,7 +282,7 @@ export default class ModalDropdown extends Component {
 
   _renderLoading() {
     return (
-      <ActivityIndicator size='small'/>
+      <ActivityIndicator size='small' style={{paddingHorizontal: 16}}/>
     );
   }
 
@@ -409,7 +415,7 @@ const styles = StyleSheet.create({
   },
   dropdown: {
     position: 'absolute',
-    height: (33 + StyleSheet.hairlineWidth) * 5,
+    // height: (33 + StyleSheet.hairlineWidth) * 5,
     borderWidth: StyleSheet.hairlineWidth,
     borderColor: 'lightgray',
     borderRadius: 2,
